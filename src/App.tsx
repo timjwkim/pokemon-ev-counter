@@ -16,6 +16,11 @@ const initialStats: Stats = {
 const MAX_STAT = 252;
 const MAX_TOTAL = 510;
 
+const createPokemon = (): Pokemon => ({
+  name: "New Pokemon",
+  stats: initialStats,
+});
+
 function App() {
   // const [stats, setStats] = useLocalStorage<Stats>("evStats", initialStats);
   const [team, setTeam] = useLocalStorage<Pokemon[]>("evTeam", [
@@ -26,27 +31,16 @@ function App() {
 
   const updateStat = (index: number, stat: Stat, amount: number) => {
     setTeam((prev) => {
-      const newTeam = structuredClone(prev);
+      const newTeam = [...prev];
       const pokemon = newTeam[index];
 
-      const total = Object.values(pokemon.stats).reduce(
-        (a, b) => a + b,
-        0
-      );
-
-      const newValue = pokemon.stats[stat] + amount;
-
-      // Enforce constraints
-      if (
-        newValue < 0 ||
-        newValue > MAX_STAT ||
-        total + amount > MAX_TOTAL
-      ) {
-        return prev;
-      }
-
-      historyRef.current.push(prev);
-      pokemon.stats[stat] = newValue;
+      newTeam[index] = {
+        ...pokemon,
+        stats: {
+          ...pokemon.stats,
+          [stat]: Math.max(0, pokemon.stats[stat] + amount),
+        },
+      };
 
       return newTeam;
     });
@@ -66,10 +60,10 @@ function App() {
 
     historyRef.current.push(team);
 
-    setTeam([
-      ...team,
-      { name: `Pokemon ${team.length + 1}`, stats: initialStats },
-    ]);
+    setTeam(prev => {
+      if (prev.length >= 6) return prev;
+      return [...prev, createPokemon()];
+    });
   }
 
   const removePokemon = (index: number) => {
