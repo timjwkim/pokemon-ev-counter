@@ -11,6 +11,15 @@ type Props = {
   canRemove: boolean;
 };
 
+const STATS_ABBR: Record<Stat, string> = {
+    hp: "HP",
+    attack: "ATK",
+    defense: "DEF",
+    specialAttack: "SPA",
+    specialDefense: "SPD",
+    speed: "SPE",
+};
+
 const PokemonCard = ({
   pokemon,
   index,
@@ -67,42 +76,56 @@ const PokemonCard = ({
 
       {Object.entries(pokemon.stats).map(([stat, value]) => (
         <div className="stat-row" key={stat}>
-          <div className="stat-buttons-left">
-            <button
-              className="decrement"
-              onClick={() => updateStat(index, stat as Stat, -10)}
-            >
-              -10
-            </button>
-            <button
-              className="decrement"
-              onClick={() => updateStat(index, stat as Stat, -1)}
-            >
-              -1
-            </button>
-          </div>
-          <div className="stat-name">
-            {stat}: {value}
-          </div>
-          <div className="stat-buttons-right">
-            <button
-              className="increment"
-              onClick={() =>
-                updateStat(
-                index,
-                stat as Stat,
-                pokemon.machoBrace ? 2 : 1
-              )}
-            >
-              +{pokemon.machoBrace ? 2 : 1}
-            </button>
-            <button
-              className="increment"
-              onClick={() => updateStat(index, stat as Stat, 10)}
-            >
-              +10
-            </button>
-          </div>
+            <div className="stat-buttons-left">
+                <button
+                    className="decrement"
+                    onClick={() => updateStat(index, stat as Stat, -10)}
+                >
+                -10
+                </button>
+                <button
+                    className="decrement"
+                    onClick={() =>
+                        updateStat(
+                            index,
+                            stat as Stat,
+                            pokemon.machoBrace ? -2 : -1
+                        )
+                    }
+                >
+                -{pokemon.machoBrace ? 2 : 1}
+                </button>
+            </div>
+
+            <div className="stat-center">
+                <div className="stat-label">
+                    {STATS_ABBR[stat as Stat]}
+                </div>
+                <div className="stat-value">
+                    {value}
+                </div>
+            </div>
+
+            <div className="stat-buttons-right">
+                <button
+                    className="increment"
+                    onClick={() =>
+                        updateStat(
+                            index,
+                            stat as Stat,
+                            pokemon.machoBrace ? 2 : 1
+                        )
+                    }
+                >
+                +{pokemon.machoBrace ? 2 : 1}
+                </button>
+                <button
+                    className="increment"
+                    onClick={() => updateStat(index, stat as Stat, 10)}
+                >
+                +10
+                </button>
+            </div>
         </div>
       ))}
 
