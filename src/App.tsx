@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import type { Stats, Stat, Pokemon } from "./types";
 import PokemonCard from "./components/PokemonCard";
@@ -19,6 +19,7 @@ const MAX_TOTAL = 510;
 const createPokemon = (): Pokemon => ({
   name: "New Pokemon",
   stats: initialStats,
+  machoBrace: false,
 });
 
 function App() {
@@ -80,15 +81,25 @@ function App() {
 
   const resetPokemonStats = (index: number) => {
     setTeam((prev) => {
-    const newTeam = structuredClone(prev);
+      const newTeam = structuredClone(prev);
 
-    // Save current state for undo
-    historyRef.current.push(prev);
+      // Save current state for undo
+      historyRef.current.push(prev);
 
-    newTeam[index].stats = { ...initialStats };
+      newTeam[index].stats = { ...initialStats };
 
-    return newTeam;
-  });
+      return newTeam;
+    });
+  }
+
+  const toggleMachoBrace = (index: number) => {
+    setTeam(prev =>
+      prev.map((pokemon, i) =>
+        i === index
+          ? { ...pokemon, machoBrace: !pokemon.machoBrace }
+          : pokemon
+      )
+    );
   }
 
   return (
@@ -120,6 +131,7 @@ function App() {
             updateName={updateName}
             removePokemon={removePokemon}
             resetPokemonStats={resetPokemonStats}
+            toggleMachoBrace={toggleMachoBrace}
             canRemove={team.length > 1}
           />
         ))}

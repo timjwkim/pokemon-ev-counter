@@ -12,4 +12,5 @@ export type Stat = keyof Stats;
 export type Pokemon = {
     name: string;
     stats: Stats;
+    machoBrace?: boolean;
 };

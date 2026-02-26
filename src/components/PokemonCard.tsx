@@ -7,6 +7,7 @@ type Props = {
   updateName: (index: number, name: string) => void;
   removePokemon: (index: number) => void;
   resetPokemonStats: (index: number) => void;
+  toggleMachoBrace: (index: number) => void;
   canRemove: boolean;
 };
 
@@ -17,6 +18,7 @@ const PokemonCard = ({
   updateName,
   removePokemon,
   resetPokemonStats,
+  toggleMachoBrace,
   canRemove,
 }: Props) => {
   const total = Object.values(pokemon.stats).reduce(
@@ -50,6 +52,17 @@ const PokemonCard = ({
         >
           Reset Stats
         </button>
+
+        <button
+          onClick={() => toggleMachoBrace(index)}
+          style={{
+            marginLeft: 10,
+            backgroundColor: pokemon.machoBrace ? "#FFD700" : "#ccc",
+            fontWeight: "bold",
+          }}
+        >
+          {pokemon.machoBrace ? "Macho ON" : "Macho OFF"}
+        </button>
       </div>
 
       {Object.entries(pokemon.stats).map(([stat, value]) => (
@@ -74,9 +87,14 @@ const PokemonCard = ({
           <div className="stat-buttons-right">
             <button
               className="increment"
-              onClick={() => updateStat(index, stat as Stat, 1)}
+              onClick={() =>
+                updateStat(
+                index,
+                stat as Stat,
+                pokemon.machoBrace ? 2 : 1
+              )}
             >
-              +1
+              +{pokemon.machoBrace ? 2 : 1}
             </button>
             <button
               className="increment"
