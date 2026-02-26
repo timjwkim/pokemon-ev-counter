@@ -1,5 +1,8 @@
+import { useRef } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
-import type { Stats, StatName } from "./types";
+import type { Stats, Stat, Pokemon } from "./types";
+import PokemonCard from "./components/PokemonCard";
+import "./App.css";
 
 const initialStats: Stats = {
   hp: 0,
@@ -14,49 +17,119 @@ const MAX_STAT = 252;
 const MAX_TOTAL = 510;
 
 function App() {
-  const [stats, setStats] = useLocalStorage<Stats>(
-    "evStats",
-    initialStats
-  );
+  // const [stats, setStats] = useLocalStorage<Stats>("evStats", initialStats);
+  const [team, setTeam] = useLocalStorage<Pokemon[]>("evTeam", [
+    { name: "Pokemon 1", stats: initialStats }
+  ]);
 
-  const total = Object.values(stats).reduce(
-    (sum, value) => sum + value,
-    0
-  );
+  const historyRef = useRef<Pokemon[][]>([]);
 
-  function increment(stat: StatName, amount: number) {
-    setStats((prev) => {
-      const newValue = prev[stat] + amount;
-      const newTotal = total + amount;
+  const updateStat = (index: number, stat: Stat, amount: number) => {
+    setTeam((prev) => {
+      const newTeam = structuredClone(prev);
+      const pokemon = newTeam[index];
 
-      if (newValue > MAX_STAT || newTotal > MAX_TOTAL) {
+      const total = Object.values(pokemon.stats).reduce(
+        (a, b) => a + b,
+        0
+      );
+
+      const newValue = pokemon.stats[stat] + amount;
+
+      // Enforce constraints
+      if (
+        newValue < 0 ||
+        newValue > MAX_STAT ||
+        total + amount > MAX_TOTAL
+      ) {
         return prev;
       }
 
-      return {
-        ...prev,
-        [stat]: newValue,
-      };
+      historyRef.current.push(prev);
+      pokemon.stats[stat] = newValue;
+
+      return newTeam;
     });
   }
 
+  const updateName = (index: number, newName: string) => {
+    setTeam((prev) => {
+      const newTeam = structuredClone(prev);
+      historyRef.current.push(prev);
+      newTeam[index].name = newName;
+      return newTeam;
+    });
+  }
+
+  const addPokemon = () => {
+    if (team.length >= 6) return;
+
+    historyRef.current.push(team);
+
+    setTeam([
+      ...team,
+      { name: `Pokemon ${team.length + 1}`, stats: initialStats },
+    ]);
+  }
+
+  const removePokemon = (index: number) => {
+    if (team.length <= 1) return;
+
+    historyRef.current.push(team);
+    setTeam(team.filter((_, i) => i !== index));
+  }
+
+  const undo = () => {
+    const previous = historyRef.current.pop();
+    if (previous) setTeam(previous);
+  }
+
+  const resetPokemonStats = (index: number) => {
+    setTeam((prev) => {
+    const newTeam = structuredClone(prev);
+
+    // Save current state for undo
+    historyRef.current.push(prev);
+
+    newTeam[index].stats = { ...initialStats };
+
+    return newTeam;
+  });
+  }
+
   return (
-    <div style={{ padding: 20 }}>
-      <h1>EV Tracker</h1>
+    <div className="app-container">
+      <div className="banner">
+        Pokémon Emerald EV Counter
+      </div>
 
-      {Object.entries(stats).map(([stat, value]) => (
-        <div key={stat}>
-          <strong>{stat}</strong>: {value}
-          <button onClick={() => increment(stat as StatName, 1)}>
-            +1
-          </button>
-          <button onClick={() => increment(stat as StatName, 4)}>
-            +4
-          </button>
-        </div>
-      ))}
+      <div className="control-buttons">
+        <button onClick={addPokemon} disabled={team.length >= 6}>
+          Add Pokemon
+        </button>
 
-      <h3>Total: {total} / {MAX_TOTAL}</h3>
+        <button
+          onClick={undo}
+          disabled={historyRef.current.length === 0}
+        >
+          Undo
+        </button>
+      </div>
+
+      <div className="team-container">
+        {team.map((pokemon, index) => (
+          <PokemonCard
+            key={index}
+            pokemon={pokemon}
+            index={index}
+            updateStat={updateStat}
+            updateName={updateName}
+            removePokemon={removePokemon}
+            resetPokemonStats={resetPokemonStats}
+            canRemove={team.length > 1}
+          />
+        ))}
+      </div>
     </div>
   );
 }
