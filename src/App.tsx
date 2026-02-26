@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import type { Stats, Stat, Pokemon } from "./types";
 import PokemonCard from "./components/PokemonCard";
@@ -13,9 +13,6 @@ const initialStats: Stats = {
   speed: 0,
 };
 
-const MAX_STAT = 252;
-const MAX_TOTAL = 510;
-
 const createPokemon = (): Pokemon => ({
   name: "New Pokemon",
   stats: initialStats,
@@ -25,7 +22,7 @@ const createPokemon = (): Pokemon => ({
 function App() {
   // const [stats, setStats] = useLocalStorage<Stats>("evStats", initialStats);
   const [team, setTeam] = useLocalStorage<Pokemon[]>("evTeam", [
-    { name: "Pokemon 1", stats: initialStats }
+    { name: "Pokemon 1", stats: initialStats },
   ]);
 
   const historyRef = useRef<Pokemon[][]>([]);
@@ -45,7 +42,7 @@ function App() {
 
       return newTeam;
     });
-  }
+  };
 
   const updateName = (index: number, newName: string) => {
     setTeam((prev) => {
@@ -54,30 +51,30 @@ function App() {
       newTeam[index].name = newName;
       return newTeam;
     });
-  }
+  };
 
   const addPokemon = () => {
     if (team.length >= 6) return;
 
     historyRef.current.push(team);
 
-    setTeam(prev => {
+    setTeam((prev) => {
       if (prev.length >= 6) return prev;
       return [...prev, createPokemon()];
     });
-  }
+  };
 
   const removePokemon = (index: number) => {
     if (team.length <= 1) return;
 
     historyRef.current.push(team);
     setTeam(team.filter((_, i) => i !== index));
-  }
+  };
 
   const undo = () => {
     const previous = historyRef.current.pop();
     if (previous) setTeam(previous);
-  }
+  };
 
   const resetPokemonStats = (index: number) => {
     setTeam((prev) => {
@@ -90,33 +87,26 @@ function App() {
 
       return newTeam;
     });
-  }
+  };
 
   const toggleMachoBrace = (index: number) => {
-    setTeam(prev =>
+    setTeam((prev) =>
       prev.map((pokemon, i) =>
-        i === index
-          ? { ...pokemon, machoBrace: !pokemon.machoBrace }
-          : pokemon
-      )
+        i === index ? { ...pokemon, machoBrace: !pokemon.machoBrace } : pokemon,
+      ),
     );
-  }
+  };
 
   return (
     <div className="app-container">
-      <div className="banner">
-        Pokémon Emerald EV Counter
-      </div>
+      <div className="banner">Pokémon Emerald EV Counter</div>
 
       <div className="control-buttons">
         <button onClick={addPokemon} disabled={team.length >= 6}>
           Add Pokemon
         </button>
 
-        <button
-          onClick={undo}
-          disabled={historyRef.current.length === 0}
-        >
+        <button onClick={undo} disabled={historyRef.current.length === 0}>
           Undo
         </button>
       </div>
