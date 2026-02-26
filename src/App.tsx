@@ -106,7 +106,7 @@ function App() {
           Add Pokemon
         </button>
 
-        <button onClick={undo} disabled={historyRef.current.length === 0}>
+        <button onClick={undo} /*disabled={historyRef.current.length === 0*/ disabled={true}>
           Undo
         </button>
       </div>
